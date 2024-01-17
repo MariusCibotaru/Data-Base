@@ -1,25 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import { Box, CircularProgress } from '@mui/material';
+import Main from './page/Client/Main';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from './redux/store';
+import { fetchUserData, selectIsAuthenticated, selectCurrentUser, selectIsLoading } from './redux/slices/User';
+import { fetchSubscriptionsByUserId } from './redux/slices/Subscriptions';
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+  const token = localStorage.getItem('token'); 
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const currentUser = useSelector(selectCurrentUser);
+  const isLoading = useSelector(selectIsLoading);
+
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchUserData());
+    }
+    if (isAuthenticated && currentUser?.Id !== undefined) {
+      dispatch(fetchSubscriptionsByUserId(currentUser.Id));
+    }
+  }, [dispatch, isAuthenticated, token]);
+  
+
+  if (isLoading && (token || isAuthenticated)) {
+    return <CircularProgress />;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Box>
+      <Main/>
+    </Box>
   );
 }
 
